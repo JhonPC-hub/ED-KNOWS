@@ -94,7 +94,7 @@ const CreatePost = ({ onPostCreated }: CreatePostProps) => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !content.trim()) return;
 
@@ -120,12 +120,16 @@ const CreatePost = ({ onPostCreated }: CreatePostProps) => {
       comments: [],
     };
 
-    addPost(newPost);
-    setContent('');
-    setSelectedAchievement('');
-    setImages([]);
-    setShowForm(false);
-    if (onPostCreated) onPostCreated();
+    try {
+      await addPost(newPost);
+      setContent('');
+      setSelectedAchievement('');
+      setImages([]);
+      setShowForm(false);
+      if (onPostCreated) onPostCreated();
+    } catch (error: any) {
+      alert(error.message || 'Error al crear el post');
+    }
   };
 
   return (

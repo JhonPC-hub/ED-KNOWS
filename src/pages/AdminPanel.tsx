@@ -37,38 +37,54 @@ const AdminPanel = () => {
     }
   };
 
-  const handleAddTopic = () => {
+  const handleAddTopic = async () => {
     if (newTopic.name && newTopic.description) {
-      addTopic({
-        id: `topic-${Date.now()}`,
-        ...newTopic,
-        image: newTopic.image || undefined,
-        levels: [],
-      });
-      setNewTopic({ name: '', description: '', icon: 'FunctionSquare', image: '' });
+      try {
+        await addTopic({
+          id: `topic-${Date.now()}`,
+          ...newTopic,
+          image: newTopic.image || undefined,
+          levels: [],
+        });
+        setNewTopic({ name: '', description: '', icon: 'FunctionSquare', image: '' });
+      } catch (error: any) {
+        alert(error.message || 'Error al crear tema');
+      }
     }
   };
 
-  const handleAddLevel = () => {
+  const handleAddLevel = async () => {
     if (newLevel.topicId) {
-      addLevel(newLevel.topicId, {
-        id: `level-${Date.now()}`,
-        ...newLevel,
-        description: newLevel.description || undefined,
-      });
-      setNewLevel({ topicId: '', levelNumber: 0, type: 'exercise', description: '', videoUrl: '', exerciseImage: '', solutionImage: '', explanationVideo: '' });
+      try {
+        await addLevel(newLevel.topicId, {
+          id: `level-${Date.now()}`,
+          ...newLevel,
+          description: newLevel.description || undefined,
+        });
+        setNewLevel({ topicId: '', levelNumber: 0, type: 'exercise', description: '', videoUrl: '', exerciseImage: '', solutionImage: '', explanationVideo: '' });
+      } catch (error: any) {
+        alert(error.message || 'Error al crear nivel');
+      }
     }
   };
 
-  const handleDeleteTopic = (topicId: string) => {
+  const handleDeleteTopic = async (topicId: string) => {
     if (confirm('¿Estás seguro de eliminar este tema?')) {
-      deleteTopic(topicId);
+      try {
+        await deleteTopic(topicId);
+      } catch (error: any) {
+        alert(error.message || 'Error al eliminar tema');
+      }
     }
   };
 
-  const handleDeleteLevel = (topicId: string, levelId: string) => {
+  const handleDeleteLevel = async (topicId: string, levelId: string) => {
     if (confirm('¿Estás seguro de eliminar este nivel?')) {
-      deleteLevel(topicId, levelId);
+      try {
+        await deleteLevel(topicId, levelId);
+      } catch (error: any) {
+        alert(error.message || 'Error al eliminar nivel');
+      }
     }
   };
 

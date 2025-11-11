@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Topic, Level, Achievement, DailyProgress, Post, Comment, Testimonial, Request } from '@/types';
+import { postsAPI, topicsAPI } from '@/services/api';
 
 interface DataContextType {
   topics: Topic[];
@@ -199,54 +200,81 @@ const initialAchievements: Achievement[] = [
 ];
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [topics, setTopics] = useState<Topic[]>(() => {
-    try {
-      const saved = localStorage.getItem('topics');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (error) {
-      console.error('Error al cargar topics desde localStorage:', error);
-    }
-    return initialTopics;
-  });
-
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [achievements] = useState<Achievement[]>(initialAchievements);
-
   const [dailyProgress, setDailyProgress] = useState<DailyProgress[]>(() => {
     const saved = localStorage.getItem('dailyProgress');
     return saved ? JSON.parse(saved) : [];
   });
-
   const [testimonials, setTestimonials] = useState<Testimonial[]>(() => {
     const saved = localStorage.getItem('testimonials');
     return saved ? JSON.parse(saved) : [];
   });
-
   const [requests, setRequests] = useState<Request[]>(() => {
     const saved = localStorage.getItem('requests');
     return saved ? JSON.parse(saved) : [];
   });
+  const [loading, setLoading] = useState(true);
 
-  const [posts, setPosts] = useState<Post[]>(() => {
-    try {
-      const saved = localStorage.getItem('posts');
-      if (saved) {
-        const postsData = JSON.parse(saved);
-        return postsData.map((p: any) => ({
-          ...p,
-          createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
-          comments: p.comments?.map((c: any) => ({
-            ...c,
-            createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-          })) || [],
-        }));
+  // Cargar datos desde la API al iniciar
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Cargar topics
+        const topicsData = await topicsAPI.getAll();
+        setTopics(topicsData.map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          description: t.description,
+          icon: t.icon,
+          image: t.image,
+          levels: t.levels.map((l: any) => ({
+            id: l.id,
+            levelNumber: l.levelNumber,
+            type: l.type,
+            description: l.description,
+            videoUrl: l.videoUrl,
+            exerciseImage: l.exerciseImage,
+            solutionImage: l.solutionImage,
+            explanationVideo: l.explanationVideo,
+          })),
+        })));
+
+        // Cargar posts
+        const postsData = await postsAPI.getAll();
+        setPosts(postsData.map((p: any) => ({
+          id: p.id,
+          userId: p.userId,
+          username: p.username,
+          userProfilePicture: p.userProfilePicture,
+          type: p.type,
+          content: p.content,
+          images: p.images || [],
+          achievementId: p.achievementId,
+          achievementName: p.achievementName,
+          createdAt: new Date(p.createdAt),
+          likes: p.likes || [],
+          comments: p.comments.map((c: any) => ({
+            id: c.id,
+            postId: c.postId,
+            userId: c.userId,
+            username: c.username,
+            userProfilePicture: c.userProfilePicture,
+            content: c.content,
+            createdAt: new Date(c.createdAt),
+          })),
+        })));
+      } catch (error) {
+        console.error('Error al cargar datos desde la API:', error);
+        // Fallback a datos iniciales si la API falla
+        setTopics(initialTopics);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error al cargar posts desde localStorage:', error);
-    }
-    return [];
-  });
+    };
+    loadData();
+  }, []);
 
   // Limpiar localStorage si está lleno al iniciar (solo si es absolutamente necesario)
   useEffect(() => {
@@ -286,78 +314,96 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    // Guardar topics en localStorage cada vez que cambien
-    // Esto incluye cuando se agregan, actualizan o eliminan topics o levels
-    try {
-      const topicsToSave = topics.map(t => ({
-        ...t,
-        levels: t.levels.map(l => ({
-          ...l,
-        })),
-      }));
-      safeSetItem('topics', JSON.stringify(topicsToSave));
-    } catch (error) {
-      console.error('Error al guardar topics:', error);
-    }
-  }, [topics]);
-
-  useEffect(() => {
     safeSetItem('dailyProgress', JSON.stringify(dailyProgress));
   }, [dailyProgress]);
 
-  useEffect(() => {
-    // Guardar posts en localStorage cada vez que cambien
-    // Guardar siempre, incluso si está vacío, para mantener la persistencia
-    // Esto incluye cuando se agregan comentarios, likes, etc.
+  const addTopic = async (topic: Topic) => {
     try {
-      const postsToSave = posts.map(p => ({
-        ...p,
-        createdAt: p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
-        comments: p.comments.map(c => ({
-          ...c,
-          createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : c.createdAt,
-        })),
-      }));
-      safeSetItem('posts', JSON.stringify(postsToSave));
+      const newTopic = await topicsAPI.create({
+        name: topic.name,
+        description: topic.description,
+        icon: topic.icon,
+        image: topic.image,
+      });
+      setTopics(prev => [...prev, {
+        ...topic,
+        id: newTopic.id,
+        levels: [],
+      }]);
     } catch (error) {
-      console.error('Error al guardar posts:', error);
+      console.error('Error al crear tema:', error);
+      throw error;
     }
-  }, [posts]);
-
-  const addTopic = (topic: Topic) => {
-    setTopics(prev => [...prev, topic]);
   };
 
-  const updateTopic = (id: string, updates: Partial<Topic>) => {
-    setTopics(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  const updateTopic = async (id: string, updates: Partial<Topic>) => {
+    try {
+      await topicsAPI.update(id, updates);
+      setTopics(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+    } catch (error) {
+      console.error('Error al actualizar tema:', error);
+      throw error;
+    }
   };
 
-  const deleteTopic = (id: string) => {
-    setTopics(prev => prev.filter(t => t.id !== id));
+  const deleteTopic = async (id: string) => {
+    try {
+      await topicsAPI.delete(id);
+      setTopics(prev => prev.filter(t => t.id !== id));
+    } catch (error) {
+      console.error('Error al eliminar tema:', error);
+      throw error;
+    }
   };
 
-  const addLevel = (topicId: string, level: Level) => {
-    setTopics(prev => prev.map(t => 
-      t.id === topicId 
-        ? { ...t, levels: [...t.levels, level] }
-        : t
-    ));
+  const addLevel = async (topicId: string, level: Level) => {
+    try {
+      const newLevel = await topicsAPI.addLevel(topicId, {
+        levelNumber: level.levelNumber,
+        type: level.type,
+        description: level.description,
+        videoUrl: level.videoUrl,
+        exerciseImage: level.exerciseImage,
+        solutionImage: level.solutionImage,
+        explanationVideo: level.explanationVideo,
+      });
+      setTopics(prev => prev.map(t => 
+        t.id === topicId 
+          ? { ...t, levels: [...t.levels, { ...level, id: newLevel.id }] }
+          : t
+      ));
+    } catch (error) {
+      console.error('Error al agregar nivel:', error);
+      throw error;
+    }
   };
 
-  const updateLevel = (topicId: string, levelId: string, updates: Partial<Level>) => {
-    setTopics(prev => prev.map(t => 
-      t.id === topicId
-        ? { ...t, levels: t.levels.map(l => l.id === levelId ? { ...l, ...updates } : l) }
-        : t
-    ));
+  const updateLevel = async (topicId: string, levelId: string, updates: Partial<Level>) => {
+    try {
+      await topicsAPI.updateLevel(topicId, levelId, updates);
+      setTopics(prev => prev.map(t => 
+        t.id === topicId
+          ? { ...t, levels: t.levels.map(l => l.id === levelId ? { ...l, ...updates } : l) }
+          : t
+      ));
+    } catch (error) {
+      console.error('Error al actualizar nivel:', error);
+      throw error;
+    }
   };
 
-  const deleteLevel = (topicId: string, levelId: string) => {
-    setTopics(prev => prev.map(t => 
-      t.id === topicId
-        ? { ...t, levels: t.levels.filter(l => l.id !== levelId) }
-        : t
-    ));
+  const deleteLevel = async (topicId: string, levelId: string) => {
+    try {
+      await topicsAPI.deleteLevel(topicId, levelId);
+      setTopics(prev => prev.map(t => 
+        t.id === topicId
+          ? { ...t, levels: t.levels.filter(l => l.id !== levelId) }
+          : t
+      ));
+    } catch (error) {
+      console.error('Error al eliminar nivel:', error);
+      throw error;
+    }
   };
 
   const addDailyProgress = (progress: DailyProgress) => {
@@ -374,61 +420,102 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const addPost = (post: Post) => {
-    setPosts(prev => [post, ...prev]);
+  const addPost = async (post: Post) => {
+    try {
+      const newPost = await postsAPI.create({
+        type: post.type,
+        content: post.content,
+        images: post.images,
+        achievementId: post.achievementId,
+        achievementName: post.achievementName,
+      });
+      setPosts(prev => [{
+        ...post,
+        id: newPost.id,
+        userId: newPost.userId,
+        username: newPost.username,
+        userProfilePicture: newPost.userProfilePicture,
+        createdAt: new Date(newPost.createdAt),
+        likes: [],
+        comments: [],
+      }, ...prev]);
+    } catch (error) {
+      console.error('Error al crear post:', error);
+      throw error;
+    }
   };
 
-  const deletePost = (postId: string) => {
-    // Los posts solo pueden ser eliminados por el admin (verificación adicional en el componente)
-    setPosts(prev => {
-      const filtered = prev.filter(p => p.id !== postId);
-      // Guardar inmediatamente en localStorage
-      try {
-        localStorage.setItem('posts', JSON.stringify(filtered));
-      } catch (e) {
-        console.error('Error al guardar posts después de eliminar:', e);
-      }
-      return filtered;
-    });
+  const deletePost = async (postId: string) => {
+    try {
+      await postsAPI.delete(postId);
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (error) {
+      console.error('Error al eliminar post:', error);
+      throw error;
+    }
   };
 
-  const toggleLike = (postId: string, userId: string) => {
-    setPosts(prev => prev.map(post => {
-      if (post.id === postId) {
-        const isLiked = post.likes.includes(userId);
-        return {
-          ...post,
-          likes: isLiked 
-            ? post.likes.filter(id => id !== userId)
-            : [...post.likes, userId]
-        };
-      }
-      return post;
-    }));
+  const toggleLike = async (postId: string, userId: string) => {
+    try {
+      const result = await postsAPI.like(postId);
+      setPosts(prev => prev.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            likes: result.liked
+              ? [...post.likes, userId]
+              : post.likes.filter(id => id !== userId)
+          };
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error('Error al dar like:', error);
+    }
   };
 
-  const addComment = (postId: string, comment: Comment) => {
-    setPosts(prev => prev.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          comments: [...post.comments, comment]
-        };
-      }
-      return post;
-    }));
+  const addComment = async (postId: string, comment: Comment) => {
+    try {
+      const newComment = await postsAPI.addComment(postId, comment.content);
+      setPosts(prev => prev.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: [...post.comments, {
+              id: newComment.id,
+              postId: newComment.postId,
+              userId: newComment.userId,
+              username: newComment.username,
+              userProfilePicture: newComment.userProfilePicture,
+              content: newComment.content,
+              createdAt: new Date(newComment.createdAt),
+            }]
+          };
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error('Error al agregar comentario:', error);
+      throw error;
+    }
   };
 
-  const deleteComment = (postId: string, commentId: string) => {
-    setPosts(prev => prev.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          comments: post.comments.filter(c => c.id !== commentId)
-        };
-      }
-      return post;
-    }));
+  const deleteComment = async (postId: string, commentId: string) => {
+    try {
+      await postsAPI.deleteComment(postId, commentId);
+      setPosts(prev => prev.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: post.comments.filter(c => c.id !== commentId)
+          };
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error('Error al eliminar comentario:', error);
+      throw error;
+    }
   };
 
   const addTestimonial = (testimonial: Testimonial) => {

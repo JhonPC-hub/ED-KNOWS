@@ -1,14 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, Achievement } from '@/types';
+import { authAPI } from '@/services/api';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => boolean;
-  register: (username: string, email: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
+  register: (username: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
   newAchievement: Achievement | null;
   clearNewAchievement: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -62,108 +64,101 @@ const safeSetItem = (key: string, value: string) => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('currentUser');
-    if (saved) {
-      const userData = JSON.parse(saved);
-      return { ...userData, createdAt: new Date(userData.createdAt) };
-    }
-    return null;
-  });
-
+  const [user, setUser] = useState<User | null>(null);
   const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [users, setUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem('users');
-    if (saved) {
-      const usersData = JSON.parse(saved);
-      return usersData.map((u: any) => ({
-        ...u,
-        createdAt: new Date(u.createdAt),
-        lastLogin: u.lastLogin ? new Date(u.lastLogin) : undefined,
-        progress: u.progress?.map((p: any) => ({
-          ...p,
-          lastActivity: new Date(p.lastActivity),
-        })) || [],
-        achievements: u.achievements?.map((a: any) => ({
-          ...a,
-          unlockedAt: new Date(a.unlockedAt),
-        })) || [],
-      }));
-    }
-    // Usuario admin por defecto
-    const adminUser: User = {
-      id: 'admin-1',
-      username: 'admin',
-      email: 'admin@edknows.com',
-      password: 'admin123',
-      role: 'admin',
-      createdAt: new Date(),
-      achievements: [],
-      progress: [],
-      totalTime: 0,
-    };
-    return [adminUser];
-  });
-
+  // Verificar token al cargar
   useEffect(() => {
-    safeSetItem('users', JSON.stringify(users));
-  }, [users]);
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const userData = await authAPI.getMe();
+          setUser({
+            id: userData.id,
+            username: userData.username,
+            email: userData.email,
+            role: userData.role,
+            profilePicture: userData.profilePicture,
+            createdAt: new Date(userData.createdAt),
+            lastLogin: userData.lastLogin ? new Date(userData.lastLogin) : undefined,
+            achievements: [],
+            progress: [],
+            totalTime: 0,
+          });
+        } catch (error) {
+          console.error('Error al verificar autenticación:', error);
+          localStorage.removeItem('token');
+        }
+      }
+      setLoading(false);
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (user) {
-      // No guardar la contraseña en currentUser por seguridad
       const { password, ...userWithoutPassword } = user;
-      safeSetItem('currentUser', JSON.stringify(userWithoutPassword));
-      // Actualizar último login
-      setUsers(prev => prev.map(u => 
-        u.id === user.id ? { ...u, lastLogin: new Date() } : u
-      ));
+      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
     } else {
       localStorage.removeItem('currentUser');
     }
   }, [user]);
 
-  const login = (username: string, password: string): boolean => {
-    const foundUser = users.find(
-      u => (u.username === username || u.email === username) && u.password === password
-    );
-    if (foundUser) {
-      setUser({ ...foundUser, lastLogin: new Date() });
+  const login = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const data = await authAPI.login(username, password);
+      setUser({
+        id: data.user.id,
+        username: data.user.username,
+        email: data.user.email,
+        role: data.user.role,
+        profilePicture: data.user.profilePicture,
+        createdAt: new Date(data.user.createdAt),
+        lastLogin: data.user.lastLogin ? new Date(data.user.lastLogin) : undefined,
+        achievements: [],
+        progress: [],
+        totalTime: 0,
+      });
       return true;
-    }
-    return false;
-  };
-
-  const register = (username: string, email: string, password: string): boolean => {
-    if (users.some(u => u.username === username || u.email === email)) {
+    } catch (error: any) {
+      console.error('Error en login:', error);
+      alert(error.message || 'Error al iniciar sesión');
       return false;
     }
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      username,
-      email,
-      password,
-      role: 'student',
-      createdAt: new Date(),
-      achievements: [],
-      progress: [],
-      totalTime: 0,
-    };
-    setUsers(prev => [...prev, newUser]);
-    setUser(newUser);
-    return true;
+  };
+
+  const register = async (username: string, email: string, password: string): Promise<boolean> => {
+    try {
+      const data = await authAPI.register(username, email, password);
+      setUser({
+        id: data.user.id,
+        username: data.user.username,
+        email: data.user.email,
+        role: data.user.role,
+        profilePicture: data.user.profilePicture,
+        createdAt: new Date(data.user.createdAt),
+        achievements: [],
+        progress: [],
+        totalTime: 0,
+      });
+      return true;
+    } catch (error: any) {
+      console.error('Error en registro:', error);
+      alert(error.message || 'Error al registrar usuario');
+      return false;
+    }
   };
 
   const logout = () => {
+    authAPI.logout();
     setUser(null);
   };
 
   const updateUser = (updates: Partial<User>) => {
     if (user) {
-      const updated = { ...user, ...updates };
-      setUser(updated);
-      setUsers(prev => prev.map(u => u.id === user.id ? updated : u));
+      setUser({ ...user, ...updates });
     }
   };
 
@@ -172,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateUser, newAchievement, clearNewAchievement }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser, newAchievement, clearNewAchievement, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,12 +1,37 @@
 services:
+  # Frontend (Static Site)
   - type: web
-    name: ed-knows
+    name: ed-knows-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://ed-knows-backend.onrender.com/api
+
+  # Backend (Web Service)
+  - type: web
+    name: ed-knows-backend
     env: node
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npx serve -s dist -l 10000
+    buildCommand: cd server && npm install
+    startCommand: cd server && node server.js
     envVars:
       - key: NODE_VERSION
         value: 20.x
-    staticPublishPath: ./dist
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ed-knows-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://ed-knows-frontend.onrender.com
+
+  # Base de datos PostgreSQL
+  - type: pg
+    name: ed-knows-db
+    plan: free
 

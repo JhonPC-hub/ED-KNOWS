@@ -22,13 +22,13 @@ const PostCard = ({ post }: PostCardProps) => {
   const isAdmin = user?.role === 'admin';
   const achievement = achievements.find(a => a.id === post.achievementId);
 
-  const handleLike = () => {
+  const handleLike = async () => {
     if (user) {
-      toggleLike(post.id, user.id);
+      await toggleLike(post.id, user.id);
     }
   };
 
-  const handleComment = () => {
+  const handleComment = async () => {
     if (user && commentText.trim()) {
       const newComment = {
         id: `comment-${Date.now()}`,
@@ -39,24 +39,36 @@ const PostCard = ({ post }: PostCardProps) => {
         content: commentText.trim(),
         createdAt: new Date(),
       };
-      addComment(post.id, newComment);
-      setCommentText('');
+      try {
+        await addComment(post.id, newComment);
+        setCommentText('');
+      } catch (error: any) {
+        alert(error.message || 'Error al agregar comentario');
+      }
     }
   };
 
-  const handleDeletePost = () => {
+  const handleDeletePost = async () => {
     if (user?.role !== 'admin') {
       alert('Solo los administradores pueden eliminar posts');
       return;
     }
     if (confirm('¿Estás seguro de eliminar este post? Esta acción no se puede deshacer.')) {
-      deletePost(post.id);
+      try {
+        await deletePost(post.id);
+      } catch (error: any) {
+        alert(error.message || 'Error al eliminar post');
+      }
     }
   };
 
-  const handleDeleteComment = (commentId: string) => {
+  const handleDeleteComment = async (commentId: string) => {
     if (confirm('¿Estás seguro de eliminar este comentario?')) {
-      deleteComment(post.id, commentId);
+      try {
+        await deleteComment(post.id, commentId);
+      } catch (error: any) {
+        alert(error.message || 'Error al eliminar comentario');
+      }
     }
   };
 

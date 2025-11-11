@@ -14,7 +14,7 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -33,7 +33,8 @@ const Register = () => {
       return;
     }
 
-    if (register(username, email, password)) {
+    const success = await register(username, email, password);
+    if (success) {
       navigate('/dashboard');
     } else {
       setError('El usuario o email ya está en uso');
