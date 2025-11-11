@@ -1,8 +1,7 @@
 services:
   # Frontend (Static Site)
-  - type: web
+  - type: static
     name: ed-knows-frontend
-    env: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     envVars:
@@ -13,7 +12,6 @@ services:
   - type: web
     name: ed-knows-backend
     env: node
-    plan: free
     buildCommand: cd server && npm install
     startCommand: cd server && node server.js
     envVars:
