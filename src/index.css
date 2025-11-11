@@ -1,0 +1,226 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-purple: #7B2CBF;
+  --primary-purple-dark: #5A189A;
+  --primary-purple-light: #9D4EDD;
+  --primary-purple-lighter: #C77DFF;
+  --white: #FFFFFF;
+  --bg-light: #F8F9FA;
+  --bg-light-gradient: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+  --bg-dark: #0F0F23;
+  --bg-dark-gradient: linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%);
+  --text-light: #212529;
+  --text-dark: #E0E0E0;
+  --card-light: #FFFFFF;
+  --card-dark: #16213E;
+  --card-dark-hover: #1E2746;
+  --border-light: #E0E0E0;
+  --border-dark: #2D2D44;
+  --success: #10B981;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.16);
+  --shadow-purple: 0 8px 30px rgba(123, 44, 191, 0.25);
+  --shadow-purple-lg: 0 12px 40px rgba(123, 44, 191, 0.3);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: var(--transition);
+  line-height: 1.6;
+}
+
+body.light {
+  background: var(--bg-light-gradient);
+  background-attachment: fixed;
+  color: var(--text-light);
+  position: relative;
+}
+
+body.light::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(123, 44, 191, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(157, 78, 221, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.dark {
+  background: var(--bg-dark-gradient);
+  background-attachment: fixed;
+  color: var(--text-dark);
+  position: relative;
+}
+
+body.dark::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(123, 44, 191, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(157, 78, 221, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+input, textarea, select {
+  font-family: inherit;
+  outline: none;
+  transition: var(--transition);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-light);
+}
+
+body.dark ::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-purple);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-purple-dark);
+}
+
+/* Selección de texto */
+::selection {
+  background: var(--primary-purple);
+  color: var(--white);
+}
+
+body.dark ::selection {
+  background: var(--primary-purple-light);
+  color: var(--white);
+}
+
+
+  background: var(--bg-dark-gradient);
+  background-attachment: fixed;
+  color: var(--text-dark);
+  position: relative;
+}
+
+body.dark::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(123, 44, 191, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(157, 78, 221, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+input, textarea, select {
+  font-family: inherit;
+  outline: none;
+  transition: var(--transition);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-light);
+}
+
+body.dark ::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-purple);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-purple-dark);
+}
+
+/* Selección de texto */
+::selection {
+  background: var(--primary-purple);
+  color: var(--white);
+}
+
+body.dark ::selection {
+  background: var(--primary-purple-light);
+  color: var(--white);
+}
+

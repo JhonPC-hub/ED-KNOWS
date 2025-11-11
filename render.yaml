@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ed-knows
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s dist -l 10000
+    envVars:
+      - key: NODE_VERSION
+        value: 20.x
+    staticPublishPath: ./dist
+

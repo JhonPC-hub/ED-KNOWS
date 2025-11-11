@@ -1,0 +1,391 @@
+.achievement-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  background: linear-gradient(135deg, rgba(123, 44, 191, 0.95) 0%, rgba(157, 78, 221, 0.95) 100%);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 1.5rem;
+  min-width: 380px;
+  max-width: 420px;
+  box-shadow: 
+    0 20px 60px rgba(123, 44, 191, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+body.dark .achievement-notification {
+  background: linear-gradient(135deg, rgba(123, 44, 191, 0.98) 0%, rgba(157, 78, 221, 0.98) 100%);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(157, 78, 221, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.achievement-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.achievement-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.achievement-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.achievement-icon-bg {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.achievement-icon-bg svg {
+  color: var(--white);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.achievement-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.achievement-text {
+  flex: 1;
+  color: var(--white);
+}
+
+.achievement-badge-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.achievement-text h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  line-height: 1.2;
+}
+
+.achievement-text p {
+  font-size: 0.95rem;
+  margin: 0;
+  opacity: 0.95;
+  line-height: 1.4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.achievement-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--white);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.achievement-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.achievement-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(255, 255, 255, 0.4) 50%, 
+    rgba(255, 255, 255, 0.8) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease infinite;
+  transform-origin: left;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@media (max-width: 768px) {
+  .achievement-notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
+    padding: 1.25rem;
+  }
+
+  .achievement-content {
+    gap: 1rem;
+  }
+
+  .achievement-icon-bg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .achievement-icon-bg svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .achievement-text h3 {
+    font-size: 1.25rem;
+  }
+
+  .achievement-text p {
+    font-size: 0.875rem;
+  }
+}
+
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  background: linear-gradient(135deg, rgba(123, 44, 191, 0.95) 0%, rgba(157, 78, 221, 0.95) 100%);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 1.5rem;
+  min-width: 380px;
+  max-width: 420px;
+  box-shadow: 
+    0 20px 60px rgba(123, 44, 191, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+body.dark .achievement-notification {
+  background: linear-gradient(135deg, rgba(123, 44, 191, 0.98) 0%, rgba(157, 78, 221, 0.98) 100%);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(157, 78, 221, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.achievement-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.achievement-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.achievement-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.achievement-icon-bg {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.achievement-icon-bg svg {
+  color: var(--white);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.achievement-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.achievement-text {
+  flex: 1;
+  color: var(--white);
+}
+
+.achievement-badge-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.achievement-text h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  line-height: 1.2;
+}
+
+.achievement-text p {
+  font-size: 0.95rem;
+  margin: 0;
+  opacity: 0.95;
+  line-height: 1.4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.achievement-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--white);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.achievement-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.achievement-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(255, 255, 255, 0.4) 50%, 
+    rgba(255, 255, 255, 0.8) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease infinite;
+  transform-origin: left;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@media (max-width: 768px) {
+  .achievement-notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
+    padding: 1.25rem;
+  }
+
+  .achievement-content {
+    gap: 1rem;
+  }
+
+  .achievement-icon-bg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .achievement-icon-bg svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .achievement-text h3 {
+    font-size: 1.25rem;
+  }
+
+  .achievement-text p {
+    font-size: 0.875rem;
+  }
+}
+
+
+
